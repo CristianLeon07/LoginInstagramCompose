@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
             LoginInstagramComposeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
-                    LoginScreen(Modifier.padding(innerPadding))
+                    LoginScreen()
 
                 }
             }
