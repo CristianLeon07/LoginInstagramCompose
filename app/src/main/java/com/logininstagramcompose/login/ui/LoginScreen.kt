@@ -1,4 +1,4 @@
-package com.logininstagramcompose
+package com.logininstagramcompose.login.ui
 
 
 import android.annotation.SuppressLint
@@ -31,9 +31,9 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,16 +46,18 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.logininstagramcompose.R
+import com.logininstagramcompose.login.ui.LoginViewModel
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(loginViewModel: LoginViewModel) {
     Box(
         Modifier
             .fillMaxSize()
             .padding(8.dp)
     ) {
         Header(Modifier.align(Alignment.TopEnd))
-        Body(Modifier.align(Alignment.Center))
+        Body(Modifier.align(Alignment.Center), loginViewModel)
         Footer(Modifier.align(Alignment.BottomCenter))
     }
 
@@ -70,26 +72,36 @@ fun Header(modifier: Modifier) {
     Icon(
         imageVector = Icons.Default.Close,
         contentDescription = "close app",
-        modifier = modifier.clickable {
-            activity.finish()
+        modifier = modifier
+            .clickable {
+                activity.finish()
 
-        }.padding(top = 15.dp))
+            }
+            .padding(top = 15.dp)
+    )
 }
 
 @Composable
-fun Body(modifier: Modifier) {
-    var email by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
-    var isLoginEnable by rememberSaveable { mutableStateOf(false) }
+fun Body(modifier: Modifier, loginViewModel: LoginViewModel) {
+    val email: String by loginViewModel.email.observeAsState(initial = "")
+    val password: String by loginViewModel.password.observeAsState(initial = "")
+    val isLoginEnable : Boolean by loginViewModel.isLoginEnable.observeAsState(initial = false)
 
 
 
     Column(modifier = modifier) {
         ImageLogo(Modifier.align(Alignment.CenterHorizontally))
         Spacer(modifier = Modifier.size(16.dp))
-        Email(email, Modifier.align(Alignment.CenterHorizontally)) { email = it }
+        Email(email, Modifier.align(Alignment.CenterHorizontally)) {
+            loginViewModel.onLoginChanged(
+                email = it, password
+            )
+        }
         Spacer(modifier = Modifier.size(4.dp))
-        Password(password, Modifier.align(Alignment.CenterHorizontally)) { password = it }
+        Password(
+            password,
+            Modifier.align(Alignment.CenterHorizontally)
+        ) { loginViewModel.onLoginChanged(email = email, password = it) }
         Spacer(modifier = Modifier.size(8.dp))
         ForgotPassword(modifier = Modifier.align(Alignment.End))
         Spacer(modifier = Modifier.size(16.dp))
@@ -241,7 +253,10 @@ fun SocialLogin() {
     ) {
         Image(
             painter = painterResource(R.drawable.fb),
-            contentDescription = "Social login fb", modifier = Modifier.size(32.dp).padding(end = 8.dp)
+            contentDescription = "Social login fb",
+            modifier = Modifier
+                .size(32.dp)
+                .padding(end = 8.dp)
         )
         Text(
             "Continue as Cristian",
